@@ -1,0 +1,145 @@
+/* Layout */
+.form-page {
+    min-height: 100vh;
+    background: #f8fafc;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    box-sizing: border-box;
+    overflow-x: hidden;
+  }
+  
+  .form-container {
+    width: 100%;
+    max-width: 420px;
+    background: white;
+    padding: 32px 28px;
+    border-radius: 20px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.12);
+    margin: 20px 0;
+  }
+  
+  .form-title {
+    text-align: center;
+    color: #1e40af;
+    margin-bottom: 24px;
+    font-size: 1.6rem;
+  }
+  
+  /* Controls */
+  .form-field {
+    width: 100%;
+  }
+  
+  label {
+    display: block;
+    margin-bottom: 6px;
+    font-weight: 600;
+  }
+  
+  .input,
+  .select,
+  .textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 10px;
+    border: 1px solid #cbd5e1;
+    font-size: 1rem;
+    box-sizing: border-box;
+  }
+  
+  .textarea {
+    height: 90px;
+    resize: none;
+  }
+  
+  .error {
+    color: #ef4444;
+    font-size: 0.85rem;
+    margin-top: 4px;
+    display: block;
+    font-weight: 500;
+  }
+  
+  .required {
+    color: #ef4444;
+  }
+  
+  /* Submit */
+  .submit-btn {
+    margin-top: 24px;
+    padding: 16px;
+    background: #1e40af;
+    color: white;
+    border: none;
+    border-radius: 14px;
+    font-size: 1.2rem;
+    font-weight: bold;
+    box-shadow: 0 6px 18px rgba(30, 64, 175, 0.4);
+    cursor: pointer;
+  }
+  
+  .submit-btn:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+  }
+  
+  /* Dialog */
+  .success-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.6);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+  }
+  
+  .success-box {
+    background: white;
+    padding: 32px 28px;
+    border-radius: 20px;
+    max-width: 90%;
+    text-align: center;
+    box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+  }
+  
+  .success-title {
+    margin: 0 0 16px 0;
+    color: #1e40af;
+    font-size: 1.5rem;
+  }
+  
+  .success-text {
+    margin: 0 0 28px 0;
+    color: #4b5563;
+  }
+  
+  .dialog-actions {
+    display: flex;
+    gap: 16px;
+    justify-content: center;
+    flex-wrap: wrap;
+  }
+  
+  .dialog-btn {
+    padding: 12px 28px;
+    border: none;
+    border-radius: 12px;
+    font-size: 1.1rem;
+    font-weight: bold;
+    cursor: pointer;
+  }
+  
+  .dialog-btn.primary {
+    background: #1e40af;
+    color: white;
+  }
+  
+  .dialog-btn.secondary {
+    background: #e2e8f0;
+    color: #1e40af;
+  }
+  
