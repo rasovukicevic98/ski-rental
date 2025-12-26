@@ -10,7 +10,8 @@ function App() {
     <I18nextProvider i18n={i18n}>
       <Router>
         <Routes>
-          <Route path="/" element={<Welcome />} />
+          <Route path="/" element={<Welcome />} />          
+          <Route path="/form" element={<RentalForm />} />
           <Route path="/form/:building/:unit" element={<RentalForm />} />
         </Routes>
       </Router>
