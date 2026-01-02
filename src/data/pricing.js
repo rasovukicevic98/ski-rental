@@ -5,7 +5,7 @@ export const pricingTable = [
   },
   {
     key: "snowboardSet",
-    prices: [15, 30, 42, 54, 66, 78, 10],
+    prices: [15, 30, 45, 60, 75, 90, 12],
   },
   {
     key: "skisPoles",
@@ -21,7 +21,7 @@ export const pricingTable = [
   },
   {
     key: "boots",
-    prices: [5, 10, 15, 20, 25, 30, 5],
+    prices: [7, 14, 21, 28, 35, 42, 6],
   },
   {
     key: "sled",
@@ -29,7 +29,7 @@ export const pricingTable = [
   },
   {
     key: "helmet",
-    prices: [3, 6, 9, 12, 15, 18, 3],
+    prices: [4, 8, 12, 16, 20, 24, 4],
   },
   {
     key: "goggles",
@@ -37,10 +37,10 @@ export const pricingTable = [
   },
   {
     key: "jacket",
-    prices: [5, 10, 15, 20, 25, 30, 5],
+    prices: [7, 14, 21, 28, 35, 42, 7],
   },
   {
     key: "pants",
-    prices: [5, 10, 15, 20, 25, 30, 5],
+    prices: [7, 14, 21, 28, 35, 42, 7],
   },
 ];

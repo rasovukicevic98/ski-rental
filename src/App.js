@@ -13,6 +13,8 @@ function App() {
           <Route path="/" element={<Welcome />} />          
           <Route path="/form" element={<RentalForm />} />
           <Route path="/form/:building/:unit" element={<RentalForm />} />
+          
+          <Route path="/:building/:unit" element={<RentalForm />} />
         </Routes>
       </Router>
     </I18nextProvider>

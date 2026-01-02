@@ -100,6 +100,18 @@ const resources = {
       skisPoles: "Skis + poles",
       kidsSkis: "Kids skis (<135cm)",
       sled: "Sled",
+
+      deliveryMethod: "Delivery method",
+      deliveryToApartment: "Delivery to apartment",
+      pickupAtRental: "Pick up at ski rental",
+      pickupInfo:
+        "Pickup instructions and exact location will be sent to you by email.",
+      deliveryLocked:
+        "Delivery method is locked after adding the first reservation.",
+      deliveryHoursInfo:
+      "Delivery is available daily between 14:00 and 21:00.",
+
+
     },
   },
 
@@ -202,6 +214,20 @@ const resources = {
       skisPoles: "Skije + štapovi",
       kidsSkis: "Male skije (<135cm)",
       sled: "Sanke",
+
+      deliveryMethod: "Način preuzimanja",
+      deliveryToApartment: "Dostava do apartmana",
+      pickupAtRental: "Preuzimanje u ski rentalu",
+      pickupInfo:
+        "Tačna lokacija i instrukcije za preuzimanje biće poslate email-om.",
+      deliveryLocked:
+        "Način preuzimanja se ne može mijenjati nakon prve rezervacije.",
+
+      deliveryHoursInfo:
+        "Dostava je dostupna svakog dana u periodu od 14:00 do 21:00.",
+
+
+
     },
   },
 
@@ -300,6 +326,19 @@ const resources = {
       skisPoles: "Ski + shkopinj",
       kidsSkis: "Ski për fëmijë (<135cm)",
       sled: "Slitë",
+
+      deliveryMethod: "Mënyra e marrjes",
+      deliveryToApartment: "Dorëzim në apartament",
+      pickupAtRental: "Marrje në ski rental",
+      pickupInfo:
+        "Udhëzimet dhe vendndodhja e saktë për marrje do t’ju dërgohen me email.",
+      deliveryLocked:
+        "Mënyra e marrjes nuk mund të ndryshohet pas rezervimit të parë.",
+      deliveryHoursInfo:
+        "Dorëzimi është i disponueshëm çdo ditë nga ora 14:00 deri në 21:00.",
+
+
+
     },
   },
 
@@ -399,6 +438,18 @@ const resources = {
       skisPoles: "Лыжи + палки",
       kidsSkis: "Детские лыжи (<135 см)",
       sled: "Сани",
+
+      deliveryMethod: "Способ получения",
+      deliveryToApartment: "Доставка в апартаменты",
+      pickupAtRental: "Самовывоз в прокате",
+      pickupInfo:
+        "Инструкции и точное место получения будут отправлены вам по электронной почте.",
+      deliveryLocked:
+        "Способ получения нельзя изменить после добавления первой брони.",
+      deliveryHoursInfo:
+        "Доставка осуществляется ежедневно с 14:00 до 21:00.",
+
+
     },
   },
 };

@@ -9,6 +9,8 @@ import apartments from "./data/apartments";
 import i18n from "./i18n";
 import { pricingTable } from "./data/pricing";
 
+const PICKUP_LOCATION = "Ski Rental Bjelasica – Pickup Point";
+
 const equipmentLabels = {
   fullSet: "fullSet",
   skis: "skis",
@@ -24,13 +26,23 @@ const RentalForm = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { register, handleSubmit, setValue, watch, reset } = useForm();
+  const { register, handleSubmit, setValue, watch } = useForm({
+    defaultValues: {
+      deliveryMethod: "delivery",
+      equipmentType: "fullSet",
+      helmet: "no",
+      goggles: "no",
+      jacket: "no",
+      pants: "no",
+      sex: "male",
+    },
+  });
 
   const [addedItems, setAddedItems] = useState([]);
-  const [showSuccess, setShowSuccess] = useState(false);
   const [finalPopup, setFinalPopup] = useState(false);
   const [showPricing, setShowPricing] = useState(false);
 
+  const deliveryMethod = watch("deliveryMethod");
   const equipmentType = watch("equipmentType");
   const helmet = watch("helmet");
   const jacket = watch("jacket");
@@ -42,19 +54,23 @@ const RentalForm = () => {
   const showJacketSize = jacket === "yes";
   const showPantsSize = pants === "yes";
 
+  const isMethodLocked = addedItems.length > 0;
+
+  /* LOCATION AUTO-FILL */
   useEffect(() => {
-    if (apartmentData) {
+    if (deliveryMethod === "pickup") {
+      setValue("location", PICKUP_LOCATION);
+    } else if (apartmentData) {
       setValue("location", `${apartmentData.name}, ${apartmentData.unit}`);
     }
-  }, [apartmentData, setValue]);
+  }, [deliveryMethod, apartmentData, setValue]);
 
+  /* CONDITIONAL FIELD CLEANUP */
   useEffect(() => {
     const needsHeightWeight = ["fullSet", "skis", "snowboard"].includes(
       equipmentType
     );
-    const needsBoots = ["fullSet", "boots", "snowboard"].includes(
-      equipmentType
-    );
+    const needsBoots = ["fullSet", "boots", "snowboard"].includes(equipmentType);
 
     if (!needsHeightWeight) {
       setValue("height", "—");
@@ -73,13 +89,14 @@ const RentalForm = () => {
       1,
       Math.ceil((new Date(data.toDate) - new Date(data.fromDate)) / 86400000)
     );
+
     setAddedItems((prev) => [
       ...prev,
       {
         equipmentType: data.equipmentType,
-        name: data.name,
         days,
         location: data.location,
+        deliveryMethod: data.deliveryMethod,
         details: data,
       },
     ]);
@@ -87,94 +104,67 @@ const RentalForm = () => {
 
   const onSubmit = (data) => {
     addToBasket(data);
-    setShowSuccess(true);
   };
 
   const buildEmailContent = () => {
-    if (!addedItems.length) return t("noItems");
+    if (!addedItems.length) return "";
 
     const first = addedItems[0];
-    const d = first.details || {};
+    const d = first.details;
 
     let content = `
-${t("rentalDates")}:
-${t("from")}: ${d.fromDate}
-${t("to")}: ${d.toDate}
-${t("days")}: ${first.days}\n`;
+Delivery method: ${
+      d.deliveryMethod === "pickup"
+        ? "Pickup at rental"
+        : "Delivery to apartment"
+    }
+Location: ${d.location}
+
+From: ${d.fromDate}
+To: ${d.toDate}
+Days: ${first.days}
+
+`;
 
     addedItems.forEach((item, index) => {
       const det = item.details;
-
       content += `
-${t("customer")} #${index + 1}:
-${t("name")}: ${det.name}
-${t("phone")}: ${det.phone}
-${t("email")}: ${det.email || "-"}
+Customer ${index + 1}
+Name: ${det.name}
+Phone: ${det.phone}
+Email: ${det.email || "-"}
 
-${t("equipmentType")}: ${t(equipmentLabels[item.equipmentType])}
-${t("height")}: ${det.height}
-${t("weight")}: ${det.weight}
-${t("shoeSize")}: ${det.shoeSize}
-${t("helmet")}: ${det.helmet} ${det.helmetSize || ""}
-${t("goggles")}: ${det.goggles}
-${t("jacket")}: ${det.jacket} ${det.jacketSize || ""}
-${t("pants")}: ${det.pants} ${det.pantsSize || ""}
-${t("notes")}: ${det.specialNotes || "-"}
------------------------------`;
+Equipment: ${t(equipmentLabels[item.equipmentType])}
+Height: ${det.height}
+Weight: ${det.weight}
+Shoe size: ${det.shoeSize}
+Helmet: ${det.helmet} ${det.helmetSize || ""}
+Goggles: ${det.goggles}
+Jacket: ${det.jacket} ${det.jacketSize || ""}
+Pants: ${det.pants} ${det.pantsSize || ""}
+Notes: ${det.specialNotes || "-"}
+-----------------------------
+`;
     });
 
     return content;
   };
 
-  const sendCustomerConfirmation = async (firstItem, allItems) => {
-    if (!firstItem?.details?.email) return;
-
-    const det = firstItem.details;
-
-    await emailjs.send(
-      "service_gnu085e",
-      "template_o4wyfoa",
-      {
-        email: det.email,
-        location: det.location,
-        fromDate: det.fromDate,
-        toDate: det.toDate,
-        days: firstItem.days,
-        message: allItems
-          .map(
-            (x, i) => `
-${i + 1}. ${t(equipmentLabels[x.equipmentType])} — ${x.days} ${t("days")}
-${t("helmet")}: ${x.details.helmet} ${x.details.helmetSize || ""}
-${t("goggles")}: ${x.details.goggles}
-${t("jacket")}: ${x.details.jacket} ${x.details.jacketSize || ""}
-${t("pants")}: ${x.details.pants} ${x.details.pantsSize || ""}
-${t("notes")}: ${x.details.specialNotes || "-"}`
-          )
-          .join("\n"),
-      },
-      "wQsv3Cbh-qNO2lWuo"
-    );
-  };
-
   const sendEmail = async () => {
     try {
-      const primaryLocation =
-        addedItems[0]?.location ||
-        locationField ||
-        (apartmentData ? `${apartmentData.name}, ${apartmentData.unit}` : "-");
-
       await emailjs.send(
         "service_gnu085e",
         "template_wf23o5y",
-        { location: primaryLocation, emailContent: buildEmailContent() },
+        {
+          location: addedItems[0]?.location || locationField,
+          emailContent: buildEmailContent(),
+        },
         "wQsv3Cbh-qNO2lWuo"
       );
 
-      await sendCustomerConfirmation(addedItems[0], addedItems);
-
       setFinalPopup(true);
       setAddedItems([]);
-    } catch (err) {
+    } catch {
       alert("Error sending email");
     }
   };
@@ -184,51 +174,101 @@ ${t("notes")}: ${x.details.specialNotes || "-"}`
 
   return (
     <>
-    
       <div className="form-page">
-        {/* CLICKABLE LOGO */}
-        <div className="top-logo" onClick={() => navigate("/")}>
-          <img src="/logo.png" alt="Ski Rental Logo" />
-        </div>
-
         {/* LANGUAGE SELECTOR */}
-        <div
-          style={{
-            position: "absolute",
-            top: "16px",
-            right: "16px",
-            zIndex: 9999,
-          }}
-        >
-          <select
-            onChange={(e) => i18n.changeLanguage(e.target.value)}
-            defaultValue={i18n.language}
+          <div
             style={{
-              padding: "10px 14px",
-              background: "rgba(0,0,0,0.15)",
-              color: "white",
-              borderRadius: "14px",
-              cursor: "pointer",
+              position: "absolute",
+              top: "16px",
+              right: "16px",
+              zIndex: 9999,
             }}
           >
-            <option value="en" style={{ color: "black" }}>
-              EN
-            </option>
-            <option value="cnr" style={{ color: "black" }}>
-              MNE
-            </option>
-            <option value="sq" style={{ color: "black" }}>
-              AL
-            </option>
-            <option value="ru" style={{ color: "black" }}>
-              RU
-            </option>
-          </select>
+            <select
+              onChange={(e) => i18n.changeLanguage(e.target.value)}
+              defaultValue={i18n.language}
+              style={{
+                padding: "10px 14px",
+                background: "rgba(0,0,0,0.15)",
+                color: "white",
+                borderRadius: "14px",
+                cursor: "pointer",
+              }}
+            >
+              <option value="en" style={{ color: "black" }}>
+                EN
+              </option>
+              <option value="cnr" style={{ color: "black" }}>
+                MNE
+              </option>
+              <option value="sq" style={{ color: "black" }}>
+                AL
+              </option>
+              <option value="ru" style={{ color: "black" }}>
+                RU
+              </option>
+            </select>
+          </div>
+
+        <div className="top-logo" onClick={() => navigate("/")}>
+          <img src="/logo.png" alt="Ski Rental Logo" />
         </div>
 
         <div className="form-container">
           <h2 className="form-title">{t("bookEquipment")}</h2>
 
+          {/* DELIVERY / PICKUP */}
+          <div className="form-field">
+            <label>{t("deliveryMethod")}</label>
+            <select
+              {...register("deliveryMethod")}
+              className="select"
+              disabled={isMethodLocked}
+            >
+              <option value="delivery">{t("deliveryToApartment")}</option>
+              <option value="pickup">{t("pickupAtRental")}</option>
+            </select>
+
+            {isMethodLocked && (
+              <p style={{ fontSize: "12px", opacity: 0.7, marginTop: "6px" }}>
+                {t("deliveryLocked")}
+              </p>
+            )}
+          </div>
+          {deliveryMethod === "delivery" && (
+            <p style={{ fontSize: "14px", textAlign: "center", opacity: 0.8 }}>
+              {t("deliveryHoursInfo")}
+            </p>
+          )}
+
+          {deliveryMethod === "pickup" && (
+            <>
+              <p style={{ fontSize: "14px", textAlign: "center", opacity: 0.8 }}>
+                {t("pickupInfo")}
+              </p>
+
+              <div
+                style={{
+                  width: "100%",
+                  borderRadius: "14px",
+                  overflow: "hidden",
+                  boxShadow: "0 6px 18px rgba(0,0,0,0.25)",
+                  marginBottom: "20px",
+                }}
+              >
+                <iframe
+                  title="Ski Rental Bjelasica"
+                  width="100%"
+                  height="160"
+                  style={{ border: 0 }}
+                  loading="lazy"
+                  src="https://maps.google.com/maps?q=Ski%20Rental%20Bjelasica&z=13&output=embed"
+                />
+              </div>
+            </>
+          )}
+
+          {/* MAIN FORM */}
           <form onSubmit={handleSubmit(onSubmit)}>
             <div className="form-field">
               <label>{t("whatDoYouNeed")}</label>
@@ -243,10 +283,7 @@ ${t("notes")}: ${x.details.specialNotes || "-"}`
 
             <div className="form-field">
               <label>{t("name")} *</label>
-              <input
-                {...register("name", { required: true })}
-                className="input"
-              />
+              <input {...register("name", { required: true })} className="input" />
             </div>
 
             <div className="form-field">
@@ -294,28 +331,21 @@ ${t("notes")}: ${x.details.specialNotes || "-"}`
               <input
                 {...register("location", { required: true })}
                 className="input"
+                disabled={deliveryMethod === "pickup"}
+                style={{ opacity: deliveryMethod === "pickup" ? 0.6 : 1 }}
               />
             </div>
 
-            {/* CONDITIONAL FIELDS */}
             {["fullSet", "skis", "snowboard"].includes(equipmentType) && (
               <>
                 <div className="form-field">
                   <label>{t("height")} (cm)</label>
-                  <input
-                    type="number"
-                    {...register("height")}
-                    className="input"
-                  />
+                  <input type="number" {...register("height")} className="input" />
                 </div>
 
                 <div className="form-field">
                   <label>{t("weight")} (kg)</label>
-                  <input
-                    type="number"
-                    {...register("weight")}
-                    className="input"
-                  />
+                  <input type="number" {...register("weight")} className="input" />
                 </div>
               </>
             )}
@@ -421,14 +451,12 @@ ${t("notes")}: ${x.details.specialNotes || "-"}`
             <button className="submit-btn">{t("addToList")}</button>
           </form>
 
-          {/* BASKET */}
           {addedItems.length > 0 && (
             <div className="basket-list">
               <h3>{t("yourReservations")}</h3>
 
               {addedItems.map((item, i) => {
                 const det = item.details;
-
                 return (
                   <div key={i} className="basket-item">
                     <div className="basket-header">
@@ -482,109 +510,55 @@ ${t("notes")}: ${x.details.specialNotes || "-"}`
               </button>
             </div>
           )}
-          {/* PRICING TOGGLE */}
-<div style={{ marginTop: "30px" }}>
-  <button
-    type="button"
-    className="submit-btn"
-    style={{ width: "100%", background: "#444" }}
-    onClick={() => setShowPricing((v) => !v)}
-  >
-    {showPricing ? t("hidePricing") : t("checkPricing")}
-  </button>
 
-  {showPricing && (
-    <div className="pricing-table-wrapper">
-      <table className="pricing-table">
-        <thead>
-          <tr>
-            <th>{t("equipment")}</th>
-            <th>1</th>
-            <th>2</th>
-            <th>3</th>
-            <th>4</th>
-            <th>5</th>
-            <th>6</th>
-            <th>{t("nextDay")}</th>
-          </tr>
-        </thead>
-        <tbody>
-          {pricingTable.map((row) => (
-            <tr key={row.key}>
-              <td>{t(row.key)}</td>
-              {row.prices.map((p, i) => (
-                <td key={i}>{p}€</td>
-              ))}
-            </tr>
-          ))}
-        </tbody>
-      </table>
-    </div>
-  )}
-</div>
-
-        </div>
-        
-      </div>
-
-      
-
-      {/* POPUP: ADD ANOTHER */}
-      {showSuccess && (
-        <div className="success-overlay">
-          <div className="success-box">
-            <h3 className="success-title">{t("itemAdded")}</h3>
-            <p className="success-text">{t("addAnotherPerson")}</p>
-
+          {/* PRICING */}
+          <div style={{ marginTop: "30px" }}>
             <button
-              className="dialog-btn primary"
-              style={{ marginTop: "15px", width: "100%", maxWidth: "200px" }}
-              onClick={() => {
-                const currentEmail = watch("email");
-                const currentPhone = watch("phone");
-                const currentLocation = watch("location");
-                const currentFrom = watch("fromDate");
-                const currentTo = watch("toDate");
-
-                reset({
-                  equipmentType: "fullSet",
-                  name: "",
-                  age: "",
-                  sex: "male",
-                  height: "",
-                  weight: "",
-                  shoeSize: "",
-                  helmet: "no",
-                  helmetSize: "",
-                  goggles: "no",
-                  jacket: "no",
-                  jacketSize: "",
-                  pants: "no",
-                  pantsSize: "",
-                  specialNotes: "",
-                  email: currentEmail,
-                  phone: currentPhone,
-                  location: currentLocation,
-                  fromDate: currentFrom,
-                  toDate: currentTo,
-                });
-
-                setShowSuccess(false);
-              }}
+              type="button"
+              className="submit-btn"
+              style={{ width: "100%", background: "#444" }}
+              onClick={() => setShowPricing((v) => !v)}
             >
-              OK
+              {showPricing ? t("hidePricing") : t("checkPricing")}
             </button>
+
+            {showPricing && (
+              <div className="pricing-table-wrapper">
+                <table className="pricing-table">
+                  <thead>
+                    <tr>
+                      <th>{t("equipment")}</th>
+                      <th>1</th>
+                      <th>2</th>
+                      <th>3</th>
+                      <th>4</th>
+                      <th>5</th>
+                      <th>6</th>
+                      <th>{t("nextDay")}</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {pricingTable.map((row) => (
+                      <tr key={row.key}>
+                        <td>{t(row.key)}</td>
+                        {row.prices.map((p, i) => (
+                          <td key={i}>{p}€</td>
+                        ))}
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
           </div>
         </div>
-      )}
+      </div>
 
-      {/* FINAL POPUP */}
       {finalPopup && (
         <div className="success-overlay">
           <div className="success-box">
-            <h3 className="success-title">{t("reservationSent")}</h3>
-            <p className="success-text">{t("thankYouOrderReceived")}</p>
-
+            <h3>{t("reservationSent")}</h3>
+            <p>{t("thankYouOrderReceived")}</p>
             <button
               className="dialog-btn primary"
               onClick={() => {
