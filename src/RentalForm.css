@@ -248,3 +248,13 @@ label {
 .remove-btn:active {
   transform: scale(0.95);
 }
+
+.error-text{
+  color: red;
+}
+
+.black-notification{
+  font-size: 12px;
+  opacity: 0.7;
+  margin-top: 6px 
+}

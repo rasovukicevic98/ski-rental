@@ -25,7 +25,7 @@ const resources = {
       height: "Height",
       weight: "Weight",
       age: "Age",
-      sex: "Sex",
+      sex: "Gender",
       male: "Male",
       female: "Female",
       other: "Other",
@@ -89,6 +89,9 @@ const resources = {
       service2: "Helmets, goggles, jackets, pants",
       service3: "Delivery to your apartment",
       service4: "Rent or buy — new & used",
+      service5: "Skis, snowboards, boots, helmets, goggles, jackets and pants",
+      service6: "Book in advance and pick up your equipment",
+
 
       checkPricing: "Check pricing",
       hidePricing: "Hide pricing",
@@ -110,7 +113,19 @@ const resources = {
         "Delivery method is locked after adding the first reservation.",
       deliveryHoursInfo:
       "Delivery is available daily between 14:00 and 21:00.",
-
+      shoeSizeRequired:
+        "Shoe size is mandatory.",
+      phoneRequired:
+        "Phone number is required",
+        nameRequired: "Name is required",
+      emailRequired: "Email is required",
+      fromDateRequired: "Start date is required",
+      toDateRequired: "End date is required",
+      locationRequired: "Location is required",
+      heightRequired: "Height is required",
+      weightRequired: "Weight is required",
+      invalidEmail: "Please enter a valid email address",
+      locationLockedSameAddress: "Address is locked because all equipment must be delivered to the same address.",
 
     },
   },
@@ -203,6 +218,8 @@ const resources = {
       service2: "Kacige, naočare, jakne, pantalone",
       service3: "Dostava do apartmana",
       service4: "Iznajmljivanje ili kupovina — novo i polovno",
+      service5: "Skije, bordovi, pancerice, kacige, naočare, jakne i pantalone",
+      service6: "Rezervišite unaprijed i preuzmite vašu opremu",
 
       checkPricing: "Pogledaj cjenovnik",
       hidePricing: "Sakrij cjenovnik",
@@ -225,8 +242,17 @@ const resources = {
 
       deliveryHoursInfo:
         "Dostava je dostupna svakog dana u periodu od 14:00 do 21:00.",
-
-
+      nameRequired: "Ime je obavezno",
+      emailRequired: "Email je obavezan",
+      phoneRequired: "Broj telefona je obavezan",
+      fromDateRequired: "Datum početka je obavezan",
+      toDateRequired: "Datum završetka je obavezan",
+      locationRequired: "Lokacija je obavezna",
+      heightRequired: "Visina je obavezna",
+      weightRequired: "Težina je obavezna",
+      shoeSizeRequired: "Broj cipela je obavezan",
+      invalidEmail: "Unesite email adresu u ispravnom formatu",
+      locationLockedSameAddress:  "Adresa je zaključana jer sva oprema mora biti dostavljena na istu adresu.",
 
     },
   },
@@ -315,6 +341,8 @@ const resources = {
       service2: "Helmeta, syze, xhaketa, pantallona",
       service3: "Dorëzim në apartament",
       service4: "Me qira ose blerje — të reja & të përdorura",
+      service5: "Ski, snowboard, këpucë skish, helmeta, syze, xhaketa dhe pantallona",
+      service6: "Rezervoni paraprakisht dhe merrni pajisjet tuaja",
 
       checkPricing: "Shiko çmimet",
       hidePricing: "Fshih çmimet",
@@ -336,8 +364,17 @@ const resources = {
         "Mënyra e marrjes nuk mund të ndryshohet pas rezervimit të parë.",
       deliveryHoursInfo:
         "Dorëzimi është i disponueshëm çdo ditë nga ora 14:00 deri në 21:00.",
-
-
+      nameRequired: "Emri është i detyrueshëm",
+      emailRequired: "Email-i është i detyrueshëm",
+      phoneRequired: "Numri i telefonit është i detyrueshëm",
+      fromDateRequired: "Data e fillimit është e detyrueshme",
+      toDateRequired: "Data e përfundimit është e detyrueshme",
+      locationRequired: "Lokacioni është i detyrueshëm",
+      heightRequired: "Lartësia është e detyrueshme",
+      weightRequired: "Pesha është e detyrueshme",
+      shoeSizeRequired: "Madhësia e këpucëve është e detyrueshme",
+      invalidEmail: "Shkruani një adresë email-i të vlefshme",
+      locationLockedSameAddress: "Adresa është e kyçur sepse e gjithë pajisja duhet të dorëzohet në të njëjtën adresë.",
 
     },
   },
@@ -427,6 +464,8 @@ const resources = {
       service2: "Шлемы, очки, куртки, штаны",
       service3: "Доставка в апартаменты",
       service4: "Аренда или покупка — новое и б/у",
+      service5: "Лыжи, сноуборды, ботинки, шлемы, очки, куртки и брюки",
+      service6: "Забронируйте заранее и получите своё снаряжение",
 
       checkPricing: "Посмотреть цены",
       hidePricing: "Скрыть цены",
@@ -448,7 +487,17 @@ const resources = {
         "Способ получения нельзя изменить после добавления первой брони.",
       deliveryHoursInfo:
         "Доставка осуществляется ежедневно с 14:00 до 21:00.",
-
+      nameRequired: "Имя обязательно",
+      emailRequired: "Email обязателен",
+      phoneRequired: "Номер телефона обязателен",
+      fromDateRequired: "Дата начала обязательна",
+      toDateRequired: "Дата окончания обязательна",
+      locationRequired: "Адрес обязателен",
+      heightRequired: "Рост обязателен",
+      weightRequired: "Вес обязателен",
+      shoeSizeRequired: "Размер обуви обязателен",
+      invalidEmail: "Введите корректный адрес электронной почты",
+      locationLockedSameAddress:"Адрес заблокирован, так как всё оборудование должно быть доставлено по одному адресу.",
 
     },
   },

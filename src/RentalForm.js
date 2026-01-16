@@ -26,7 +26,14 @@ const RentalForm = () => {
   const { t } = useTranslation();
   const navigate = useNavigate();
 
-  const { register, handleSubmit, setValue, watch } = useForm({
+  const {
+    register,
+    handleSubmit,
+    setValue,
+    watch,
+    reset,
+    formState: { errors },
+  } = useForm({
     defaultValues: {
       deliveryMethod: "delivery",
       equipmentType: "fullSet",
@@ -66,23 +73,33 @@ const RentalForm = () => {
   }, [deliveryMethod, apartmentData, setValue]);
 
   /* CONDITIONAL FIELD CLEANUP */
-  useEffect(() => {
-    const needsHeightWeight = ["fullSet", "skis", "snowboard"].includes(
-      equipmentType
-    );
-    const needsBoots = ["fullSet", "boots", "snowboard"].includes(equipmentType);
+ useEffect(() => {
+  const needsHeightWeight = ["fullSet", "skis", "snowboard"].includes(
+    equipmentType
+  );
+  const needsBoots = ["fullSet", "boots", "snowboard"].includes(
+    equipmentType
+  );
 
-    if (!needsHeightWeight) {
-      setValue("height", "—");
-      setValue("weight", "—");
-    }
-    if (!needsBoots) {
-      setValue("shoeSize", "—");
-    }
-    if (helmet !== "yes") setValue("helmetSize", "");
-    if (jacket !== "yes") setValue("jacketSize", "");
-    if (pants !== "yes") setValue("pantsSize", "");
-  }, [equipmentType, helmet, jacket, pants, setValue]);
+  if (!needsHeightWeight) {
+    setValue("height", "", { shouldValidate: false, shouldDirty: false });
+    setValue("weight", "", { shouldValidate: false, shouldDirty: false });
+  }
+
+  if (!needsBoots) {
+    setValue("shoeSize", "", { shouldValidate: false, shouldDirty: false });
+  }
+
+  if (helmet !== "yes")
+    setValue("helmetSize", "", { shouldValidate: false, shouldDirty: false });
+
+  if (jacket !== "yes")
+    setValue("jacketSize", "", { shouldValidate: false, shouldDirty: false });
+
+  if (pants !== "yes")
+    setValue("pantsSize", "", { shouldValidate: false, shouldDirty: false });
+}, [equipmentType, helmet, jacket, pants, setValue]);
+
 
   const addToBasket = (data) => {
     const days = Math.max(
@@ -104,6 +121,30 @@ const RentalForm = () => {
 
   const onSubmit = (data) => {
     addToBasket(data);
+
+    reset({
+    deliveryMethod: watch("deliveryMethod"),
+    location: watch("location"),
+    email: watch("email"),
+    phone: watch("phone"),
+    fromDate: watch("fromDate"),
+    toDate: watch("toDate"),
+
+    // 🎿 per-person data (RESET)
+    equipmentType: "fullSet",
+    name: "",
+    height: "",
+    weight: "",
+    shoeSize: "",
+    age: "",
+    sex: "male",
+
+    helmet: "no",
+    goggles: "no",
+    jacket: "no",
+    pants: "no",
+    specialNotes: "",
+  });
   };
 
   const buildEmailContent = () => {
@@ -152,21 +193,80 @@ Notes: ${det.specialNotes || "-"}
 
   const sendEmail = async () => {
     try {
+      const primaryLocation =
+        addedItems[0]?.location ||
+        locationField ||
+        (apartmentData ? `${apartmentData.name}, ${apartmentData.unit}` : "-");
+
+      // 📩 ADMIN EMAIL (reservation note)
       await emailjs.send(
         "service_gnu085e",
         "template_wf23o5y",
         {
-          location: addedItems[0]?.location || locationField,
+          location: primaryLocation,
           emailContent: buildEmailContent(),
         },
         "wQsv3Cbh-qNO2lWuo"
       );
 
+      // 📩 CUSTOMER CONFIRMATION
+      await sendCustomerConfirmation(addedItems[0], addedItems);
+
       setFinalPopup(true);
       setAddedItems([]);
-    } catch {
+    } catch (err) {
+      console.error(err);
       alert("Error sending email");
     }
+  };
+
+  const sendCustomerConfirmation = async (firstItem, allItems) => {
+    if (!firstItem?.details?.email) return;
+
+    const det = firstItem.details;
+
+    await emailjs.send(
+      "service_gnu085e",
+      "template_o4wyfoa",
+      {
+        email: det.email,
+
+        // 🚚 Delivery / Pickup
+        deliveryMethod:
+          det.deliveryMethod === "pickup"
+            ? "Pickup at Ski Rental Bjelasica"
+            : "Delivery to apartment",
+
+        // 📍 Main location shown to user
+        location:
+          det.deliveryMethod === "pickup"
+            ? "Pickup at Ski Rental Bjelasica"
+            : det.location,
+
+        // 🧭 Always shown (meaningful only for pickup)
+        pickupLocation:
+          "Ski Rental Bjelasica – main rental facility, located on the way to the ski center",
+
+        // 🗓️ Dates
+        fromDate: det.fromDate,
+        toDate: det.toDate,
+        days: firstItem.days,
+
+        // 🧍 Reservation details
+        message: allItems
+          .map(
+            (x, i) => `
+${i + 1}. ${t(equipmentLabels[x.equipmentType])} — ${x.days} ${t("days")}
+${t("helmet")}: ${x.details.helmet} ${x.details.helmetSize || ""}
+${t("goggles")}: ${x.details.goggles}
+${t("jacket")}: ${x.details.jacket} ${x.details.jacketSize || ""}
+${t("pants")}: ${x.details.pants} ${x.details.pantsSize || ""}
+${t("notes")}: ${x.details.specialNotes || "-"}`
+          )
+          .join("\n"),
+      },
+      "wQsv3Cbh-qNO2lWuo"
+    );
   };
 
   const sizes = ["XS", "S", "M", "L", "XL", "XXL"];
@@ -176,39 +276,39 @@ Notes: ${det.specialNotes || "-"}
     <>
       <div className="form-page">
         {/* LANGUAGE SELECTOR */}
-          <div
+        <div
+          style={{
+            position: "absolute",
+            top: "16px",
+            right: "16px",
+            zIndex: 9999,
+          }}
+        >
+          <select
+            onChange={(e) => i18n.changeLanguage(e.target.value)}
+            defaultValue={i18n.language}
             style={{
-              position: "absolute",
-              top: "16px",
-              right: "16px",
-              zIndex: 9999,
+              padding: "10px 14px",
+              background: "rgba(0,0,0,0.15)",
+              color: "white",
+              borderRadius: "14px",
+              cursor: "pointer",
             }}
           >
-            <select
-              onChange={(e) => i18n.changeLanguage(e.target.value)}
-              defaultValue={i18n.language}
-              style={{
-                padding: "10px 14px",
-                background: "rgba(0,0,0,0.15)",
-                color: "white",
-                borderRadius: "14px",
-                cursor: "pointer",
-              }}
-            >
-              <option value="en" style={{ color: "black" }}>
-                EN
-              </option>
-              <option value="cnr" style={{ color: "black" }}>
-                MNE
-              </option>
-              <option value="sq" style={{ color: "black" }}>
-                AL
-              </option>
-              <option value="ru" style={{ color: "black" }}>
-                RU
-              </option>
-            </select>
-          </div>
+            <option value="en" style={{ color: "black" }}>
+              EN
+            </option>
+            <option value="cnr" style={{ color: "black" }}>
+              MNE
+            </option>
+            <option value="sq" style={{ color: "black" }}>
+              AL
+            </option>
+            <option value="ru" style={{ color: "black" }}>
+              RU
+            </option>
+          </select>
+        </div>
 
         <div className="top-logo" onClick={() => navigate("/")}>
           <img src="/logo.png" alt="Ski Rental Logo" />
@@ -220,6 +320,11 @@ Notes: ${det.specialNotes || "-"}
           {/* DELIVERY / PICKUP */}
           <div className="form-field">
             <label>{t("deliveryMethod")}</label>
+            {isMethodLocked && (
+              <p className="black-notification" >
+                {t("deliveryLocked")}
+              </p>
+            )}
             <select
               {...register("deliveryMethod")}
               className="select"
@@ -229,11 +334,7 @@ Notes: ${det.specialNotes || "-"}
               <option value="pickup">{t("pickupAtRental")}</option>
             </select>
 
-            {isMethodLocked && (
-              <p style={{ fontSize: "12px", opacity: 0.7, marginTop: "6px" }}>
-                {t("deliveryLocked")}
-              </p>
-            )}
+            
           </div>
           {deliveryMethod === "delivery" && (
             <p style={{ fontSize: "14px", textAlign: "center", opacity: 0.8 }}>
@@ -243,7 +344,9 @@ Notes: ${det.specialNotes || "-"}
 
           {deliveryMethod === "pickup" && (
             <>
-              <p style={{ fontSize: "14px", textAlign: "center", opacity: 0.8 }}>
+              <p
+                style={{ fontSize: "14px", textAlign: "center", opacity: 0.8 }}
+              >
                 {t("pickupInfo")}
               </p>
 
@@ -283,31 +386,54 @@ Notes: ${det.specialNotes || "-"}
 
             <div className="form-field">
               <label>{t("name")} *</label>
-              <input {...register("name", { required: true })} className="input" />
-            </div>
-
-            <div className="form-field">
-              <label>
-                {t("email")} ({t("optional")})
-              </label>
+              {errors.name && (
+                <div className="error-text">{t("nameRequired")}</div>
+              )}
               <input
-                {...register("email")}
+                {...register("name", { required: true })}
                 className="input"
-                placeholder="example@gmail.com"
               />
             </div>
 
             <div className="form-field">
+              <label>{t("email")} *</label>
+
+              {errors.email && (
+                <div className="error-text">{errors.email.message}</div>
+              )}
+              <input
+                {...register("email", {
+                  required: t("emailRequired"),
+                  pattern: {
+                    value: /^[^\s@]+@[^\s@]+\.[^\s@]+$/,
+                    message: t("invalidEmail"),
+                  },
+                })}
+                className="input"
+                disabled={isMethodLocked}
+                placeholder="example@gmail.com"
+              />
+
+            </div>
+
+            <div className="form-field">
               <label>{t("phone")} *</label>
+              {errors.phone && (
+                <div className="error-text">{t("phoneRequired")}</div>
+              )}
               <input
                 type="tel"
                 {...register("phone", { required: true })}
                 className="input"
+                disabled={isMethodLocked}
               />
             </div>
 
             <div className="form-field">
               <label>{t("from")} *</label>
+              {errors.fromDate && (
+                <div className="error-text">{t("fromDateRequired")}</div>
+              )}
               <input
                 type="date"
                 {...register("fromDate", { required: true })}
@@ -318,6 +444,9 @@ Notes: ${det.specialNotes || "-"}
 
             <div className="form-field">
               <label>{t("to")} *</label>
+              {errors.toDate && (
+                <div className="error-text">{t("toDateRequired")}</div>
+              )}
               <input
                 type="date"
                 {...register("toDate", { required: true })}
@@ -328,10 +457,18 @@ Notes: ${det.specialNotes || "-"}
 
             <div className="form-field">
               <label>{t("location")} *</label>
+              {errors.location && (
+                <div className="error-text">{t("locationRequired")}</div>
+              )}
+              {isMethodLocked && (
+                <p className="black-notification">
+                  {t("locationLockedSameAddress")}
+                </p>
+              )}
               <input
                 {...register("location", { required: true })}
                 className="input"
-                disabled={deliveryMethod === "pickup"}
+                disabled={deliveryMethod === "pickup"|| isMethodLocked}
                 style={{ opacity: deliveryMethod === "pickup" ? 0.6 : 1 }}
               />
             </div>
@@ -340,12 +477,26 @@ Notes: ${det.specialNotes || "-"}
               <>
                 <div className="form-field">
                   <label>{t("height")} (cm)</label>
-                  <input type="number" {...register("height")} className="input" />
+                  {errors.height && (
+                    <div className="error-text">{t("heightRequired")}</div>
+                  )}
+                  <input
+                    type="number"
+                    {...register("height", { required: true })}
+                    className="input"
+                  />
                 </div>
 
                 <div className="form-field">
                   <label>{t("weight")} (kg)</label>
-                  <input type="number" {...register("weight")} className="input" />
+                  {errors.weight && (
+                    <div className="error-text">{t("weightRequired")}</div>
+                  )}
+                  <input
+                    type="number"
+                    {...register("weight", { required: true })}
+                    className="input"
+                  />
                 </div>
               </>
             )}
@@ -353,7 +504,17 @@ Notes: ${det.specialNotes || "-"}
             {["fullSet", "boots", "snowboard"].includes(equipmentType) && (
               <div className="form-field">
                 <label>{t("shoeSize")}</label>
-                <select {...register("shoeSize")} className="select">
+                {errors.shoeSize && (
+                  <div className="error-text">{t("shoeSizeRequired")}</div>
+                )}
+                <select
+                  {...register("shoeSize", {
+                    required: ["fullSet", "boots", "snowboard"].includes(
+                      equipmentType
+                    ),
+                  })}
+                  className="select"
+                >
                   <option value="">{t("select")}</option>
                   {[...Array(13)].map((_, i) => (
                     <option key={i} value={35 + i}>

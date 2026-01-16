@@ -83,7 +83,7 @@ const Welcome = () => {
             Ski Rental Bjelasica
           </h1>
 
-          <p style={{
+          {/* <p style={{
             fontSize: '1.22rem',
             maxWidth: '92%',
             margin: '0 auto 20px',
@@ -93,7 +93,7 @@ const Welcome = () => {
             fontWeight: '500'
           }}>
             {t('Ski equipment delivered at your doorstep')}
-          </p>
+          </p> */}
 
           {/* SERVICES CARD */}
           <div style={{
@@ -124,10 +124,8 @@ const Welcome = () => {
               fontSize: '1.05rem',
               lineHeight: '2'
             }}>
-              <li>{t('service1')}</li>
-              <li>{t('service2')}</li>
-              <li>{t('service3')}</li>
-              <li>{t('service4')}</li>
+              <li>{t('service5')}</li>
+              <li>{t('service6')}</li>
             </ul>
           </div>
 
